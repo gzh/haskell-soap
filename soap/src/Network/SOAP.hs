@@ -32,6 +32,8 @@ import           Data.XML.Types (Event)
 import           Text.XML.Writer (ToXML, soap)
 import qualified Data.Text as T
 
+import           Network.SOAP.Parsing.Stream (laxTag)
+
 -- | Different parsing modes available to extract reply contents.
 data ResponseParser a = StreamParser (Parser a)            -- ^ Streaming parser from Text.XML.Stream.Parse
                       | CursorParser (XML.Cursor -> a)     -- ^ XPath-like parser from Text.XML.Cursor
@@ -73,8 +75,8 @@ runResponseParser parser lbs =
             return . func $ lbs
 
 unwrapEnvelopeSink :: Parser a -> Parser a
-unwrapEnvelopeSink sink = XSP.force "No SOAP Envelope" $ XSP.tagNoAttr "{http://schemas.xmlsoap.org/soap/envelope/}Envelope"
-                        $ XSP.force "No SOAP Body" $ XSP.tagNoAttr "{http://schemas.xmlsoap.org/soap/envelope/}Body"
+unwrapEnvelopeSink sink = XSP.force "No SOAP Envelope" $ laxTag "Envelope"
+                        $ XSP.force "No SOAP Body" $ laxTag "Body"
                         $ sink
 
 unwrapEnvelopeCursor :: Cursor -> Cursor
