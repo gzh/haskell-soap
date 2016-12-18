@@ -1,0 +1,10 @@
+resolver: lts-7.13
+
+packages:
+- soap/
+- soap-openssl/
+- soap-tls/
+
+extra-deps: []
+flags: {}
+extra-package-dbs: []
