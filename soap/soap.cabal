@@ -48,7 +48,7 @@ license:             MIT
 license-file:        LICENSE
 author:              Alexander Bondarenko
 maintainer:          aenor.realm@gmail.com
--- copyright:           
+copyright:           (c) 2013-2017 Alexander Bondarenko
 category:            Web
 build-type:          Simple
 cabal-version:       >=1.8

@@ -144,7 +144,7 @@ runQueryM :: Manager
           -> Transport
 runQueryM manager url requestProc bodyProc soapAction doc = do
     let body = renderLBS def $! doc
-#if MIN_VERSION_http_client(0,4,3)
+#if MIN_VERSION_http_client(0,4,30)
     request <- parseRequest url
 #else
     request <- parseUrl url

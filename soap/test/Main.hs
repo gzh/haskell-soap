@@ -1,10 +1,10 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 import Network.SOAP
 import Network.SOAP.Exception
 import Network.SOAP.Parsing.Cursor
 import Network.SOAP.Parsing.Stream
 import qualified Network.SOAP.Transport.Mock as Mock
-import qualified Network.SOAP.Transport.HTTP as HTTP
 import Text.XML
 import Text.XML.Writer
 import Text.XML.Cursor as Cur hiding (element)
@@ -13,10 +13,10 @@ import Text.XML.Stream.Parse as Parse
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.HashMap.Strict as HM
-import qualified Data.ByteString.Lazy.Char8 as LBS
 
 import Test.Hspec
 
+main :: IO ()
 main = hspec $ do
     describe "Transport.Mock" $ do
         it "dispatches requests" $ do
@@ -38,20 +38,20 @@ main = hspec $ do
         describe "CursorParser" $ do
             let salad cur = head $ cur $/ laxElement "salad"
 
-            let check parser = do
+            let checkCP parser = do
                 t <- Mock.initTransport [ ("spam", saladHandler )]
-                invokeWS t "spam" () () parser
+                invokeWS t "spam" () () (CursorParser parser)
 
             it "reads content" $ do
-                result <- check $ CursorParser (readT "bacon" . salad)
+                result <- checkCP $ readT "bacon" . salad
                 result `shouldBe` "many"
 
             it "reads and converts" $ do
-                result <- check $ CursorParser (readC "eggs" . salad)
+                result <- checkCP $ readC "eggs" . salad
                 result `shouldBe` (2 :: Integer)
 
             it "reads dict" $ do
-                result <- check $ CursorParser (readDict $ laxElement "salad" )
+                result <- checkCP $ readDict $ laxElement "salad"
                 result `shouldBe` HM.fromList [ ("bacon","many")
                                               , ("sausage","some")
                                               , ("eggs","2")
@@ -59,9 +59,14 @@ main = hspec $ do
         describe "StreamParser" $ do
             it "extracts stuff" $ do
                 let recipeParser = do
-                    ings <- Parse.force "no salad" $ Parse.tagNoAttr "salad" $ Parse.many $ Parse.tag Just return $ \name -> do
-                        quantity <- Parse.content
-                        return $ RecipeEntry (nameLocalName name) quantity
+                    ings <- Parse.force "no salad" . Parse.tagNoAttr "salad" . Parse.many $
+#if MIN_VERSION_xml_conduit(1,5,0)
+                        Parse.tag Parse.anyName pure $ \name -> do
+#else
+                        Parse.tag Just return $ \name -> do
+#endif
+                            quantity <- Parse.content
+                            return $ RecipeEntry (nameLocalName name) quantity
                     return $ Recipe ings
 
                 t <- spamTransport
@@ -100,12 +105,15 @@ main = hspec $ do
                                        , faultDetail = ""
                                        }
 
+invokeSpam :: ResponseParser b -> IO b
 invokeSpam parser = do
     t <- spamTransport
     invokeWS t "spam" () () parser
 
+spamTransport :: IO Transport
 spamTransport = Mock.initTransport [ ("spam", saladHandler) ]
 
+saladHandler :: Mock.Handler
 saladHandler = Mock.handler $ \_ -> do
     return . element "salad" $ do
         element "sausage" ("some" :: Text)
@@ -115,6 +123,7 @@ saladHandler = Mock.handler $ \_ -> do
 data RecipeEntry = RecipeEntry Text Text deriving (Eq, Show)
 data Recipe = Recipe [RecipeEntry] deriving (Eq, Show)
 
+saladRecipe :: Recipe
 saladRecipe = Recipe [ RecipeEntry "sausage" "some"
                      , RecipeEntry "bacon" "many"
                      , RecipeEntry "eggs" "2"
