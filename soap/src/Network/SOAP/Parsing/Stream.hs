@@ -33,7 +33,11 @@ import           Data.Text (Text, unpack)
 
 -- | Namespace- and attribute- ignorant tagNoAttr.
 laxTag :: (MonadThrow m) => Text -> Sink Event m a -> Sink Event m (Maybe a)
+#if MIN_VERSION_xml_conduit(1,5,0)
+laxTag ln = XSP.tag' (XSP.matching $ (== ln) . nameLocalName) XSP.ignoreAttrs . const
+#else
 laxTag ln = XSP.tagPredicate ((== ln) . nameLocalName) XSP.ignoreAttrs . const
+#endif
 
 -- | Non-maybe version of laxTag/tagNoAttr.
 flaxTag :: (MonadThrow m) => Text -> Sink Event m a -> Sink Event m a

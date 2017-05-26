@@ -1,3 +1,11 @@
+0.2.3.4:
+
+    * Prepare for xml-conduit-1.5 series.
+
+0.2.3.3:
+
+    * Relax envelope parser.
+
 0.2.3.2:
 
     * Unbreak the build with GHC 7.8.
