@@ -4,3 +4,5 @@ over `http-conduit` and `xml-conduit` to create a request,
 send it and get a response.
 
 http://hackage.haskell.org/package/soap
+
+LTS snapshots supported: LTS-5 (GHC 7.10.3) and further.

@@ -57,17 +57,18 @@ main = hspec $ do
                                               , ("eggs","2")
                                               ]
         describe "StreamParser" $ do
+#if MIN_VERSION_xml_conduit(1,5,0)
+            let parseAnyName = Parse.anyName
+#else
+            let parseAnyName = Just
+#endif
             it "extracts stuff" $ do
                 let recipeParser = do
-                    ings <- Parse.force "no salad" . Parse.tagNoAttr "salad" . Parse.many $
-#if MIN_VERSION_xml_conduit(1,5,0)
-                        Parse.tag Parse.anyName pure $ \name -> do
-#else
-                        Parse.tag Just return $ \name -> do
-#endif
-                            quantity <- Parse.content
-                            return $ RecipeEntry (nameLocalName name) quantity
-                    return $ Recipe ings
+                        Parse.force "no salad" . Parse.tagNoAttr "salad" $ do
+                            ings <- Parse.many $ Parse.tag parseAnyName pure $ \name -> do
+                                quantity <- Parse.content
+                                pure $ RecipeEntry (nameLocalName name) quantity
+                            pure $ Recipe ings
 
                 t <- spamTransport
                 result <- invokeWS t "spam" () () $ StreamParser recipeParser
@@ -75,13 +76,14 @@ main = hspec $ do
 
             it "extracts using lax helpers" $ do
                 let recipeParser = flaxTag "salad" $ do
-                    s <- flaxContent "sausage"
-                    b <- laxContent "bacon"
-                    e <- readTag "eggs"
-                    return $ Recipe [ RecipeEntry "sausage" s
-                                    , RecipeEntry "bacon" $ maybe "" id b
-                                    , RecipeEntry "eggs" . T.pack $ show (e :: Int)
-                                    ]
+                      s <- flaxContent "sausage"
+                      b <- laxContent "bacon"
+                      e <- readTag "eggs"
+                      return $ Recipe
+                          [ RecipeEntry "sausage" s
+                          , RecipeEntry "bacon" $ maybe "" id b
+                          , RecipeEntry "eggs" . T.pack $ show (e :: Int)
+                          ]
                 result <- invokeSpam $ StreamParser recipeParser
                 result `shouldBe` saladRecipe
 
