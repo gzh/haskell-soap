@@ -1,0 +1,7 @@
+# XXX: there's no nighly
+image: fpco/stack-build:lts
+
+test:
+  script:
+    - stack setup --resolver nightly
+    - stack build --resolver nightly --pedantic --test
