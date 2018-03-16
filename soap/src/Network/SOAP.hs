@@ -25,6 +25,7 @@ import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import qualified Data.ByteString.Lazy.Char8 as LBS
 
 import           Data.Default (def)
+import           Data.Void (Void)
 import qualified Text.XML as XML
 import           Text.XML.Cursor as XML
 import qualified Text.XML.Stream.Parse as XSP
@@ -41,7 +42,7 @@ data ResponseParser a = StreamParser (Parser a)            -- ^ Streaming parser
                       | RawParser (LBS.ByteString -> a)    -- ^ Work with a raw bytestring.
 
 -- | Stream parser from Text.XML.Stream.Parse.
-type Parser a = Sink Event (ResourceT IO) a
+type Parser a = ConduitM Event Void (ResourceT IO) a
 
 -- | Prepare data, assemble request and apply a parser to a response.
 invokeWS :: (ToXML h, ToXML b)
@@ -60,8 +61,8 @@ runResponseParser :: ResponseParser a -> LBS.ByteString -> IO a
 runResponseParser parser lbs =
     case parser of
         StreamParser sink ->
-            runResourceT $
-                XSP.parseLBS def lbs $$ unwrapEnvelopeSink sink
+            runResourceT . runConduit $
+                fuse (XSP.parseLBS def lbs) (unwrapEnvelopeSink sink)
 
         CursorParser func ->
             checkFault func . unwrapEnvelopeCursor

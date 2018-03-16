@@ -18,7 +18,6 @@ import Data.X509.CertificateStore
 import Data.X509.Validation
 import Network.Connection (TLSSettings(..))
 
-import           Data.Monoid
 import           Data.Text (Text)
 import           Data.Default (def)
 import qualified Data.Configurator as Conf
@@ -36,8 +35,8 @@ confTransport :: Text   -- ^ Section name containing transport settings.
               -> ServerCertCallback
               -> IO Transport
 confTransport section conf onSC = do
-    cert <- Conf.lookup conf (section <> ".client_cert")
-    key <- Conf.lookup conf (section <> ".client_key")
+    cert <- Conf.lookup conf (section `mappend` ".client_cert")
+    key <- Conf.lookup conf (section `mappend` ".client_key")
     settings <- makeSettings cert key onSC
     confTransportWith settings section conf id id
 
