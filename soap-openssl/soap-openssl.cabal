@@ -16,18 +16,18 @@ license:             MIT
 license-file:        LICENSE
 author:              Alexander Bondarenko
 maintainer:          aenor.realm@gmail.com
--- copyright:           
+-- copyright:
 category:            Web
 build-type:          Simple
 cabal-version:       >=1.10
-extra-source-files:  
+extra-source-files:
   changelog
 
 library
   ghc-options:         -Wall
   exposed-modules:     Network.SOAP.Transport.HTTP.OpenSSL
   build-depends:
-      base                >=4.8 && <5
+      base                >= 4.8 && <5
     , soap                >= 0.2.2 && < 0.3
     , configurator        >= 0.3 && < 1.0
     , data-default        >= 0.5.3 && < 1.0
