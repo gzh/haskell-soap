@@ -16,7 +16,7 @@ module Network.SOAP.Transport.HTTP
     , initTransport, initTransport_, initTransportWith
     , confTransport, confTransportWith
     , RequestP, traceRequest
-    , BodyP, iconv, traceBody
+    , BodyP, traceBody
     , runQuery
     ) where
 
@@ -25,7 +25,6 @@ import Network.HTTP.Client
 
 import qualified Data.Configurator as Conf
 import           Data.Configurator.Types (Config)
-import           Codec.Text.IConv (EncodingName, convertFuzzy, Fuzzy(Transliterate))
 
 import           Data.Text (Text)
 import qualified Data.ByteString.Char8 as BS
@@ -123,8 +122,7 @@ confTransportWith settings section conf brp bbp = do
     let to r = r { responseTimeout = Just (timeout * 1000000) }
 #endif
 
-    encoding <- Conf.lookup conf (section <> ".encoding")
-    let ic = maybe id iconv encoding
+    let ic = id
 
     initTransportWith settings url (to . tr . brp) (tb . ic . bbp)
 
@@ -166,10 +164,6 @@ runQueryM manager url requestProc bodyProc soapAction doc = do
     httpLbs request' manager >>= bodyProc . responseBody
 
 -- * Some common processors.
-
--- | Create an IConv-based processor.
-iconv :: EncodingName -> BodyP
-iconv src = convertFuzzy Transliterate src "UTF-8"
 
 -- | Show a debug dump of a response body.
 traceBody :: BodyP

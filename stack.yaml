@@ -1,37 +1,6 @@
-#resolver: lts-7.24
-#resolver: lts-8.24
-#resolver: lts-9.17
-#resolver: lts-10.9
-#resolver: lts-11.0
-resolver: nightly-2019-05-13
-
+resolver: lts-14.12
 packages:
-- soap/
-- soap-openssl/
-- soap-tls/
-# - ../xml-conduit-writer
+- soap
+  #- soap-openssl
+- soap-tls
 
-#allow-newer: true
-
-extra-deps:
-- xml-conduit-writer-0.1.1.2
-- asn1-encoding-0.9.5
-- asn1-parse-0.9.4
-- asn1-types-0.3.2
-- byteable-0.1.1
-- connection-0.3.0
-- basement-0.0.10
-- socks-0.6.0
-- cryptonite-0.25
-- http-client-0.5.13.1
-- http-client-openssl-0.2.2.0
-- http-client-tls-0.3.5.3
-- iconv-0.4.1.3
-- memory-0.14.18
-- mime-types-0.1.0.8
-- pem-0.2.4
-- tls-1.4.1
-- x509-1.7.4
-- x509-store-1.6.6
-- x509-system-1.6.6
-- x509-validation-1.6.10
