@@ -89,6 +89,8 @@ checkFault :: (XML.Cursor -> a) -> Cursor -> IO a
 checkFault fun c = tryCur $ c $/ laxElement "Fault"
     where
         tryCur [] = return $! fun c
-        tryCur (f:_) = E.throwIO $ SOAPFault (peek "faultcode" f) (peek "faultstring" f) (peek "detail" f)
-
-        peek name cur = T.concat $! cur $/ laxElement name &/ content
+        tryCur (f:_) = E.throwIO $ SOAPFault (removeNs $ peek f code) (peek f reason)
+        code = laxElement "Code" &/ laxElement "Subcode" &/ laxElement "Value"
+        reason = laxElement "Reason" &/ laxElement "Text"
+        peek cur sel = T.concat $! cur $/ sel &/ content
+        removeNs = head . reverse . T.split (== ':')
