@@ -1,6 +1,5 @@
-resolver: lts-18.19
+resolver: lts-21.24
 packages:
-- soap
-  #- soap-openssl
-- soap-tls
-
+  - soap
+  # - soap-openssl
+  - soap-tls
