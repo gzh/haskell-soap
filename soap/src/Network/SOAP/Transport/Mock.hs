@@ -45,10 +45,11 @@ handler h doc = do
 -- | Emulate a SOAP fault.
 fault :: Text -- ^ SOAP Fault code (e.g. «soap:Server»)
       -> Text -- ^ Fault string
-      -> Text -- ^ Fault detail
       -> Handler
-fault c s d = handler . const . return $
+fault c s = handler . const . return $
     element "Fault" $ do
-        element "faultcode" c
-        element "faultstring" s
-        element "detail" d
+        element "Code" $
+            element "Subcode" $
+                element "Value" c
+        element "Reason" $
+            element "Text" s

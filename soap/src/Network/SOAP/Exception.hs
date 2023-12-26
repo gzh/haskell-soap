@@ -11,7 +11,6 @@ import Text.XML (Document)
 import Text.XML.Cursor
 import qualified Data.Text as T
 
-import Debug.Trace
 
 data SOAPParsingError = SOAPParsingError String deriving (Show, Typeable)
 instance Exception SOAPParsingError

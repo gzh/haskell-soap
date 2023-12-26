@@ -99,12 +99,11 @@ main = hspec $ do
 
         describe "Exception" $ do
             it "parses a SOAP Fault document" $ do
-                t <- Mock.initTransport [ ("crash", Mock.fault "soap:Server" "The server made a boo boo." "") ]
+                t <- Mock.initTransport [ ("crash", Mock.fault "soap:Server" "The server made a boo boo.") ]
                 lbs <- t "crash" (document "request" empty)
                 let Just e = extractSoapFault . parseLBS_ def $ lbs
-                e `shouldBe` SOAPFault { faultCode = "soap:Server"
+                e `shouldBe` SOAPFault { faultCode = "Server"
                                        , faultString = "The server made a boo boo."
-                                       , faultDetail = ""
                                        }
 
 invokeSpam :: ResponseParser b -> IO b
