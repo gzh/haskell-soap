@@ -1,5 +1,9 @@
-resolver: lts-21.24
+resolver: lts-24.37
 packages:
   - soap
   # - soap-openssl
   - soap-tls
+
+extra-deps:
+  - xml-conduit-writer-0.1.1.6
+
