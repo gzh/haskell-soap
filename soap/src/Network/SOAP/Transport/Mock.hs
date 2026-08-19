@@ -40,7 +40,7 @@ handler h doc = do
            . toXML
            $ result
     where
-        sname n = Name n (Just "http://schemas.xmlsoap.org/soap/envelope/") (Just "soapenv")
+        sname n = Name n (Just "http://www.w3.org/2003/05/soap-envelope") (Just "soapenv")
 
 -- | Emulate a SOAP fault.
 fault :: Text -- ^ SOAP Fault code (e.g. «soap:Server»)

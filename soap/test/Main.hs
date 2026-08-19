@@ -27,13 +27,23 @@ main = hspec $ do
         it "generates a soap response" $ do
             t <- Mock.initTransport [ ("foo", Mock.handler $ \_ -> return ())]
             result <- t "foo" (document "request" empty)
-            result `shouldBe` "<?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body/></soapenv:Envelope>"
+            result `shouldBe` "<?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><soapenv:Body/></soapenv:Envelope>"
 
     context "SOAP" $ do
         it "Smoke-test with RawParser" $ do
             t <- Mock.initTransport [ ("ping", const $ return "pong") ]
             result <- invokeWS t "ping" () () (RawParser id)
             result `shouldBe` "pong"
+
+        it "builds a SOAP 1.2 envelope" $ do
+            let testTransport _ doc = return $ renderLBS def doc
+            result <- invokeWS testTransport "some-action" ("header-data" :: Text) ("body-data" :: Text) (RawParser id)
+            result `shouldBe` "<?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><soapenv:Header>header-data</soapenv:Header><soapenv:Body>body-data</soapenv:Body></soapenv:Envelope>"
+
+        it "builds a SOAP 1.2 envelope without headers" $ do
+            let testTransport _ doc = return $ renderLBS def doc
+            result <- invokeWS testTransport "some-action" () ("body-data" :: Text) (RawParser id)
+            result `shouldBe` "<?xml version=\"1.0\" encoding=\"UTF-8\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><soapenv:Body>body-data</soapenv:Body></soapenv:Envelope>"
 
         describe "CursorParser" $ do
             let salad cur = head $ cur $/ laxElement "salad"

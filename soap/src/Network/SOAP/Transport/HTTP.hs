@@ -150,8 +150,9 @@ runQueryM manager url requestProc bodyProc soapAction doc = do
     request' <- requestProc request
         { method          = "POST"
         , requestBody     = RequestBodyLBS body
-        , requestHeaders  = [ ("Content-Type", "text/xml; charset=utf-8")
-                            , ("SOAPAction", BS.pack soapAction)
+        , requestHeaders  = [ ( "Content-Type"
+                              , "application/soap+xml; charset=utf-8" <> if null soapAction then "" else "; action=\"" <> BS.pack soapAction <> "\""
+                              )
                             ]
 #if MIN_VERSION_http_client(0,5,0)
         , responseTimeout = responseTimeoutMicro 15000000

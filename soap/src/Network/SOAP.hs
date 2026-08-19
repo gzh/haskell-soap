@@ -27,10 +27,10 @@ import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Data.Default (def)
 import           Data.Void (Void)
 import qualified Text.XML as XML
-import           Text.XML.Cursor as XML
+import           Text.XML.Cursor as XML hiding (element, node)
 import qualified Text.XML.Stream.Parse as XSP
 import           Data.XML.Types (Event)
-import           Text.XML.Writer (ToXML, soap)
+import           Text.XML.Writer (ToXML, toXML, document, element, render, node)
 import qualified Data.Text as T
 
 import           Network.SOAP.Parsing.Stream (laxTag)
@@ -94,3 +94,13 @@ checkFault fun c = tryCur $ c $/ laxElement "Fault"
         reason = laxElement "Reason" &/ laxElement "Text"
         peek cur sel = T.concat $! cur $/ sel &/ content
         removeNs = head . reverse . T.split (== ':')
+
+-- | Assemble a SOAP 1.2 Envelope with standard namespace.
+soap :: (ToXML h, ToXML b) => h -> b -> XML.Document
+soap header body = document (sname "Envelope") $ do
+    case render (toXML header) of
+        [] -> return ()
+        ns -> element (sname "Header") (mapM_ node ns)
+    element (sname "Body") (toXML body)
+  where
+    sname n = XML.Name n (Just "http://www.w3.org/2003/05/soap-envelope") (Just "soapenv")
